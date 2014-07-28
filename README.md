@@ -39,6 +39,14 @@ pod ack-filter MyCompany --output=Filtered.plist
 # => Licenses which includes "MyCompany" are filtered out and output to "Filtered.plist"
 ```
 
+Also, you can use ack_filter within Podfile.
+
+```
+post_install do
+  Pod::Command::AckFilter.filter('MyCompany', 'Filtered.plist')
+end
+```
+
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/cocoapods-ack_filter/fork )
