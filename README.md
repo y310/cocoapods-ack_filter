@@ -43,7 +43,17 @@ Also, you can use ack_filter within Podfile.
 
 ```
 post_install do
-  Pod::Command::AckFilter.filter('MyCompany', 'Filtered.plist')
+  Pod::Command::AckFilter.filter(pattern: /MyCompany/, output: 'Filtered.plist')
+end
+```
+
+For complex condition, you can use block to define filter.
+
+```
+post_install do
+  Pod::Command::AckFilter.filter(output: 'Filtered.plist') do |text|
+    text =~ /MyCompany/ && text !~ /Foobar/
+  end
 end
 ```
 

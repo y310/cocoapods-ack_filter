@@ -12,21 +12,27 @@ module Pod
         [['--output=FILENAME', 'Output filtered acknowledgements to FILENAME']]
       end
 
-      def self.filter(pattern, filename = nil)
-        args = [pattern]
-        args << "--output=#{filename}" if filename
-        self.new(CLAide::ARGV.new(args)).run
+      def self.filter(args, &block)
+        self.new(args, &block).run
       end
 
-      def initialize(argv)
-        @pattern = argv.shift_argument
-        @filename = argv.option('output')
-        super
+      def initialize(argv, &block)
+        if argv.kind_of?(CLAide::ARGV)
+          @pattern = Regexp.new(argv.shift_argument) unless argv.empty?
+          @filename = argv.option('output')
+          super
+        else
+          if argv[:pattern]
+            @pattern = argv[:pattern].kind_of?(Regexp) ? argv[:pattern] : Regexp.new(argv[:pattern])
+          end
+          @filename = argv[:output]
+          @filter_block = block
+        end
       end
 
       def validate!
         super
-        help! 'Specify filtering pattern' unless @pattern
+        help! 'Specify filtering pattern' if !@pattern && !@filter_block
       end
 
       def output_filename
@@ -37,7 +43,11 @@ module Pod
         plist = CFPropertyList::List.new(file: ACKNOWLEDGEMENTS_FILE)
         specs = plist.value.value['PreferenceSpecifiers']
         specs.value.reject! do |spec|
-          spec.value['FooterText'].value =~ /#{@pattern}/
+          if @filter_block
+            @filter_block.call(spec.value['FooterText'].value)
+          else
+            spec.value['FooterText'].value =~ @pattern
+          end
         end
         plist.save(output_filename, CFPropertyList::List::FORMAT_XML)
       end
