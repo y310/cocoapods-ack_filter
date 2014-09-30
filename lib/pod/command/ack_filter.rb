@@ -3,10 +3,12 @@ require 'CFPropertyList'
 module Pod
   class Command
     class AckFilter < Command
-      ACKNOWLEDGEMENTS_FILE = 'Pods/Pods-acknowledgements.plist'
+      ACKNOWLEDGEMENTS_FILE = 'Pods/Target Support Files/Pods/Pods-acknowledgements.plist'
 
       self.summary = 'Filter out licenses with pattern from Pods-acknowledgements.plist'
-      self.arguments = [['PATTERN', :required]]
+      self.arguments = [
+        CLAide::Argument.new("PATTERN", true)
+      ]
 
       def self.options
         [['--output=FILENAME', 'Output filtered acknowledgements to FILENAME']]
