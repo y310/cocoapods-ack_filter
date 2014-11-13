@@ -1,3 +1,4 @@
+require 'libxml' # used in CFPropertyList to pretty-print Acknowledgement.plist
 require 'CFPropertyList'
 
 module Pod
