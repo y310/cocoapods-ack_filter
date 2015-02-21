@@ -21,10 +21,11 @@ Or install it yourself as:
 ## Usage
 
 ```
-pod ack-filter PATTERN [--output=FILENAME]
+pod ack-filter PATTERN [--input=FILENAME] [--output=FILENAME]
 ```
 
 - PATTERN is regexp pattern string
+- --input is input acknowledgements.plist filename
 - --output is output filename
 
 ### Example
