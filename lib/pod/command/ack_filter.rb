@@ -4,15 +4,14 @@ require 'CFPropertyList'
 module Pod
   class Command
     class AckFilter < Command
-      ACKNOWLEDGEMENTS_FILE = 'Pods/Target Support Files/Pods/Pods-acknowledgements.plist'
-
       self.summary = 'Filter out licenses with pattern from Pods-acknowledgements.plist'
       self.arguments = [
         CLAide::Argument.new("PATTERN", true)
       ]
 
       def self.options
-        [['--output=FILENAME', 'Output filtered acknowledgements to FILENAME']]
+        [['--input=FILE_PATH', 'Read acknowledgements file from FILE_PATH'],
+         ['--output=FILENAME', 'Output filtered acknowledgements to FILENAME']]
       end
 
       def self.filter(args, &block)
@@ -22,12 +21,14 @@ module Pod
       def initialize(argv, &block)
         if argv.kind_of?(CLAide::ARGV)
           @pattern = Regexp.new(argv.shift_argument) unless argv.empty?
+          @input = argv.option('input')
           @filename = argv.option('output')
           super
         else
           if argv[:pattern]
             @pattern = argv[:pattern].kind_of?(Regexp) ? argv[:pattern] : Regexp.new(argv[:pattern])
           end
+          @input = argv[:input]
           @filename = argv[:output]
           @filter_block = block
         end
@@ -38,12 +39,16 @@ module Pod
         help! 'Specify filtering pattern' if !@pattern && !@filter_block
       end
 
+      def input
+        @input || 'Pods/Target Support Files/Pods/Pods-acknowledgements.plist'
+      end
+
       def output_filename
         @filename || 'Acknowledgements.plist'
       end
 
       def run
-        plist = CFPropertyList::List.new(file: ACKNOWLEDGEMENTS_FILE)
+        plist = CFPropertyList::List.new(file: input)
         specs = plist.value.value['PreferenceSpecifiers']
         specs.value.reject! do |spec|
           if @filter_block
