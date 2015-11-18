@@ -11,7 +11,8 @@ module Pod
 
       def self.options
         [['--input=FILE_PATH', 'Read acknowledgements file from FILE_PATH'],
-         ['--output=FILENAME', 'Output filtered acknowledgements to FILENAME']]
+         ['--output=FILENAME', 'Output filtered acknowledgements to FILENAME'],
+         ['--filterfile=FILENAME', 'Read a Regex filter from FILENAME']]
       end
 
       def self.filter(args, &block)
@@ -20,9 +21,10 @@ module Pod
 
       def initialize(argv, &block)
         if argv.kind_of?(CLAide::ARGV)
-          @pattern = Regexp.new(argv.shift_argument) unless argv.empty?
+          @pattern = Regexp.new(argv.shift_argument) unless argv.empty? || argv.shift_argument == nil
           @input = argv.option('input')
           @filename = argv.option('output')
+          @filterfile = argv.option('filterfile')
           super
         else
           if argv[:pattern]
@@ -30,13 +32,14 @@ module Pod
           end
           @input = argv[:input]
           @filename = argv[:output]
+          @filterfile = argv[:filterfile]
           @filter_block = block
         end
       end
 
       def validate!
         super
-        help! 'Specify filtering pattern' if !@pattern && !@filter_block
+        help! 'Specify filtering pattern' if !@pattern && !@filter_block && !@filterfile
       end
 
       def input
@@ -50,9 +53,14 @@ module Pod
       def run
         plist = CFPropertyList::List.new(file: input)
         specs = plist.value.value['PreferenceSpecifiers']
+        if @filterfile
+          filter = File.read(@filterfile)
+        end
         specs.value.reject! do |spec|
           if @filter_block
             @filter_block.call(spec.value['FooterText'].value)
+          elsif filter
+            spec.value['FooterText'].value =~ Regexp.new(filter)
           else
             spec.value['FooterText'].value =~ @pattern
           end
