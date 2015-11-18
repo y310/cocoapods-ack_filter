@@ -21,12 +21,13 @@ Or install it yourself as:
 ## Usage
 
 ```
-pod ack-filter PATTERN [--input=FILENAME] [--output=FILENAME]
+pod ack-filter PATTERN [--input=FILENAME] [--output=FILENAME] [--filterfile=FILENAME]
 ```
 
 - PATTERN is regexp pattern string
 - --input is input acknowledgements.plist filename
 - --output is output filename
+- --filterfile is a file containing a regular expression for filtering (e.g. "Pod1|Pod2" filters all occurrences of the string Pod1 and Pod2)
 
 ### Example
 
@@ -38,6 +39,11 @@ pod ack-filter MyCompany
 ```
 pod ack-filter MyCompany --output=Filtered.plist
 # => Licenses which includes "MyCompany" are filtered out and output to "Filtered.plist"
+```
+
+```
+pod ack-filter --input=unfiltered.plist --output=filtered.plist --filterfile=filterfile
+# => Regular expression from "filterfile" is used to filter "unfiltered.plist" and save it to "filtered.plist"
 ```
 
 Also, you can use ack_filter within Podfile.
